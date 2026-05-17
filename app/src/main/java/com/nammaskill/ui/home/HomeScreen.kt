@@ -1,6 +1,7 @@
 package com.nammaskill.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -29,13 +30,21 @@ import com.nammaskill.util.MockData
 fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
     val userProfile by viewModel.userProfile.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
+    var currentTab by remember { mutableIntStateOf(0) }
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
     
     // Manage local list for dynamic adding
-    val courseList = remember { mutableStateListOf<Course>().apply { addAll(MockData.courses) } }
+    val fullCourseList = remember { mutableStateListOf<Course>().apply { addAll(MockData.courses) } }
+    val courseList = remember(selectedCategory, fullCourseList.size) {
+        if (selectedCategory == null) fullCourseList 
+        else fullCourseList.filter { it.category.contains(selectedCategory!!, ignoreCase = true) }
+    }
+    
     val appliedCourseIds = remember { mutableStateOf(setOf<String>()) }
     
     var showApplyDialog by remember { mutableStateOf<Course?>(null) }
     var showAddJobDialog by remember { mutableStateOf(false) }
+    var showProfileDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -53,8 +62,11 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
                             onDismissRequest = { showMenu = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Profile") },
-                                onClick = { showMenu = false },
+                                text = { Text("View Profile") },
+                                onClick = { 
+                                    showMenu = false
+                                    showProfileDialog = true 
+                                },
                                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) }
                             )
                             Divider()
@@ -75,53 +87,88 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
                 )
             )
         },
+        bottomBar = {
+            NavigationBar(
+                containerColor = Color.White,
+                tonalElevation = 8.dp
+            ) {
+                val role = userProfile?.role ?: UserRole.TRAINEE
+                
+                NavigationBarItem(
+                    selected = currentTab == 0,
+                    onClick = { currentTab = 0 },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                    label = { Text("Home") }
+                )
+                
+                NavigationBarItem(
+                    selected = currentTab == 1,
+                    onClick = { currentTab = 1 },
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Explore") },
+                    label = { Text("Explore") }
+                )
+
+                // Role based center icon
+                val actionLabel = if (role == UserRole.TRAINER || role == UserRole.JOB_PROVIDER) "Manage" else "Applied"
+                val actionIcon = if (role == UserRole.TRAINER || role == UserRole.JOB_PROVIDER) Icons.Default.List else Icons.Default.CheckCircle
+                
+                NavigationBarItem(
+                    selected = currentTab == 2,
+                    onClick = { currentTab = 2 },
+                    icon = { Icon(actionIcon, contentDescription = actionLabel) },
+                    label = { Text(actionLabel) }
+                )
+
+                NavigationBarItem(
+                    selected = currentTab == 3,
+                    onClick = { currentTab = 3 },
+                    icon = { Icon(Icons.Default.Face, contentDescription = "AI Assistant") },
+                    label = { Text("AI Guru") }
+                )
+            }
+        },
         floatingActionButton = {
             if (userProfile?.role == UserRole.TRAINER || userProfile?.role == UserRole.JOB_PROVIDER) {
                 ExtendedFloatingActionButton(
                     onClick = { showAddJobDialog = true },
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                    text = { Text("Add Listing") },
+                    text = { Text("Create Post") },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = Color.White
                 )
             }
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(MaterialTheme.colorScheme.surface),
-            contentPadding = PaddingValues(bottom = 80.dp)
-        ) {
-            item {
-                WelcomeBanner(userProfile?.name ?: "Guest", userProfile?.role ?: UserRole.TRAINEE)
-            }
-            
-            item {
-                CategorySection()
-            }
-            
-            item {
-                SectionHeader(
-                    if (userProfile?.role == UserRole.TRAINER || userProfile?.role == UserRole.JOB_PROVIDER) 
-                        "Manage Listings" else "Top Opportunities", 
-                    Icons.Default.Info
+        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+            when(currentTab) {
+                0 -> MainDashboard(
+                    userProfile?.name ?: "Guest", 
+                    userProfile?.role ?: UserRole.TRAINEE,
+                    selectedCategory,
+                    onCategorySelect = { selectedCategory = if (selectedCategory == it) null else it },
+                    courseList,
+                    appliedCourseIds.value,
+                    onApplyRequest = { showApplyDialog = it }
                 )
-            }
-            
-            items(courseList) { course ->
-                CourseCard(
-                    course = course, 
-                    role = userProfile?.role ?: UserRole.TRAINEE,
-                    isApplied = appliedCourseIds.value.contains(course.id),
-                    onApplyClick = { showApplyDialog = course }
-                )
-            }
-            
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-                RoleSpecificSection(userProfile?.role ?: UserRole.TRAINEE)
+                1 -> Column(Modifier.fillMaxSize().padding(24.dp)) {
+                    Text("Search & Filters", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                    Text("Advanced search functionality coming soon...", color = Color.Gray)
+                }
+                2 -> Column(Modifier.fillMaxSize().padding(24.dp)) {
+                    val label = if (userProfile?.role == UserRole.TRAINER || userProfile?.role == UserRole.JOB_PROVIDER) "My Active Posts" else "My Applications"
+                    Text(label, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                    Text("You have no active items to show right now.", color = Color.Gray)
+                }
+                3 -> Column(Modifier.fillMaxSize().padding(24.dp)) {
+                    Text("AI Career Guru", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.height(16.dp))
+                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
+                        Text(
+                            "Hello! I am your Namma Skill AI Assistant. Based on your role as a ${userProfile?.role}, I can help you find the best path. What would you like to know?",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
             }
         }
 
@@ -141,10 +188,76 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
             AddListingDialog(
                 onDismiss = { showAddJobDialog = false },
                 onAdd = { newCourse ->
-                    courseList.add(0, newCourse)
+                    fullCourseList.add(0, newCourse)
                     showAddJobDialog = false
                 }
             )
+        }
+        
+        if (showProfileDialog) {
+            ProfileDialog(
+                name = userProfile?.name ?: "",
+                role = userProfile?.role ?: UserRole.TRAINEE,
+                onDismiss = { showProfileDialog = false }
+            )
+        }
+    }
+}
+
+@Composable
+fun MainDashboard(
+    name: String, 
+    role: UserRole,
+    selectedCategory: String?,
+    onCategorySelect: (String) -> Unit,
+    courses: List<Course>,
+    appliedIds: Set<String>,
+    onApplyRequest: (Course) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+        item {
+            WelcomeBanner(name, role)
+        }
+        
+        item {
+            CategorySection(selectedCategory, onCategorySelect)
+        }
+        
+        item {
+            SectionHeader(
+                if (role == UserRole.TRAINER || role == UserRole.JOB_PROVIDER) 
+                    "Active Postings" else "Recommended Courses", 
+                Icons.Default.Info
+            )
+        }
+        
+        if (courses.isEmpty()) {
+            item {
+                Text(
+                    "No items found in this category.", 
+                    modifier = Modifier.padding(24.dp), 
+                    color = Color.Gray
+                )
+            }
+        }
+
+        items(courses) { course ->
+            CourseCard(
+                course = course, 
+                role = role,
+                isApplied = appliedIds.contains(course.id),
+                onApplyClick = { onApplyRequest(course) }
+            )
+        }
+        
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+            RoleSpecificSection(role)
         }
     }
 }
@@ -190,7 +303,7 @@ fun WelcomeBanner(name: String, role: UserRole) {
 }
 
 @Composable
-fun CategorySection() {
+fun CategorySection(selectedCategory: String?, onSelect: (String) -> Unit) {
     val categories = listOf(
         "Coding" to Icons.Default.Build,
         "Sewing" to Icons.Default.Face,
@@ -207,33 +320,37 @@ fun CategorySection() {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(categories) { (label, icon) ->
-                CategoryChip(label, icon)
+                CategoryChip(label, icon, selectedCategory == label) { onSelect(label) }
             }
         }
     }
 }
 
 @Composable
-fun CategoryChip(label: String, icon: ImageVector) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+fun CategoryChip(label: String, icon: ImageVector, isSelected: Boolean, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable { onClick() }
+    ) {
         Box(
             modifier = Modifier
                 .size(72.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.secondaryContainer),
+                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 icon, 
                 contentDescription = null, 
-                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.size(32.dp)
             )
         }
         Text(
             text = label, 
             style = MaterialTheme.typography.labelMedium, 
-            fontWeight = FontWeight.Medium,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Black,
             modifier = Modifier.padding(top = 8.dp)
         )
     }
@@ -344,11 +461,13 @@ fun CourseCard(
                         Text(if (isApplied) "Applied" else "Apply Now", fontWeight = FontWeight.Bold)
                     }
                 } else {
-                    OutlinedButton(
-                        onClick = { /* Edit listing logic */ },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Edit Listing")
+                    Row {
+                        IconButton(onClick = { /* View Applicants */ }) {
+                            Icon(Icons.Default.AccountBox, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        }
+                        IconButton(onClick = { /* Edit */ }) {
+                            Icon(Icons.Default.Edit, contentDescription = null, tint = Color.Gray)
+                        }
                     }
                 }
             }
@@ -407,6 +526,7 @@ fun AddListingDialog(onDismiss: () -> Unit, onAdd: (Course) -> Unit) {
     var name by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
     var district by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf("Coding") }
     var isFree by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
 
@@ -433,6 +553,21 @@ fun AddListingDialog(onDismiss: () -> Unit, onAdd: (Course) -> Unit) {
                     label = { Text("District") },
                     isError = error && district.isEmpty()
                 )
+                
+                Text("Category")
+                val categoryOptions = listOf("Coding", "Sewing", "Agriculture", "Electric", "Plumbing", "Auto")
+                var expandedCategory by remember { mutableStateOf(false) }
+                Box {
+                    OutlinedButton(onClick = { expandedCategory = true }, modifier = Modifier.fillMaxWidth()) {
+                        Text(category)
+                    }
+                    DropdownMenu(expanded = expandedCategory, onDismissRequest = { expandedCategory = false }) {
+                        categoryOptions.forEach { option ->
+                            DropdownMenuItem(text = { Text(option) }, onClick = { category = option; expandedCategory = false })
+                        }
+                    }
+                }
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isFree, onCheckedChange = { isFree = it })
                     Text("Free Training")
@@ -450,6 +585,7 @@ fun AddListingDialog(onDismiss: () -> Unit, onAdd: (Course) -> Unit) {
                         name = name,
                         duration = duration,
                         district = district,
+                        category = category,
                         isFree = isFree,
                         centerName = "My Training Center",
                         availableSeats = 20
@@ -460,6 +596,29 @@ fun AddListingDialog(onDismiss: () -> Unit, onAdd: (Course) -> Unit) {
             }) {
                 Text("Create")
             }
+        }
+    )
+}
+
+@Composable
+fun ProfileDialog(name: String, role: UserRole, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("User Profile") },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.primary)
+                Text(text = name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text(text = role.name.replace("_", " "), color = Color.Gray)
+                Spacer(Modifier.height(16.dp))
+                Divider()
+                Spacer(Modifier.height(16.dp))
+                Text("District: Mandya", style = MaterialTheme.typography.bodyMedium)
+                Text("Joined: May 2026", style = MaterialTheme.typography.bodyMedium)
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) { Text("Close") }
         }
     )
 }
