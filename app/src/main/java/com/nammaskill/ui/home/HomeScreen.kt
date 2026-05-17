@@ -118,13 +118,6 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
                     icon = { Icon(actionIcon, contentDescription = actionLabel) },
                     label = { Text(actionLabel) }
                 )
-
-                NavigationBarItem(
-                    selected = currentTab == 3,
-                    onClick = { currentTab = 3 },
-                    icon = { Icon(Icons.Default.Face, contentDescription = "AI Assistant") },
-                    label = { Text("AI Guru") }
-                )
             }
         },
         floatingActionButton = {
@@ -158,16 +151,6 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
                     val label = if (userProfile?.role == UserRole.TRAINER || userProfile?.role == UserRole.JOB_PROVIDER) "My Active Posts" else "My Applications"
                     Text(label, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                     Text("You have no active items to show right now.", color = Color.Gray)
-                }
-                3 -> Column(Modifier.fillMaxSize().padding(24.dp)) {
-                    Text("AI Career Guru", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    Spacer(Modifier.height(16.dp))
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
-                        Text(
-                            "Hello! I am your Namma Skill AI Assistant. Based on your role as a ${userProfile?.role}, I can help you find the best path. What would you like to know?",
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
                 }
             }
         }
@@ -625,26 +608,12 @@ fun ProfileDialog(name: String, role: UserRole, onDismiss: () -> Unit) {
 
 @Composable
 fun RoleSpecificSection(role: UserRole) {
-    val message = when(role) {
-        UserRole.TRAINEE -> "Enroll in 12+ free courses today!"
-        UserRole.TRAINER -> "3 New batches assigned to you."
-        UserRole.JOB_SEEKER -> "5 Jobs matching your profile found."
-        UserRole.JOB_PROVIDER -> "Reach 500+ candidates instantly."
-    }
-    
-    val bgColor = when(role) {
-        UserRole.TRAINEE -> MaterialTheme.colorScheme.secondaryContainer
-        UserRole.TRAINER -> MaterialTheme.colorScheme.tertiaryContainer
-        UserRole.JOB_SEEKER -> Color(0xFFFFF3E0)
-        UserRole.JOB_PROVIDER -> Color(0xFFF3E5F5)
-    }
-
-    val icon = when(role) {
-        UserRole.TRAINEE -> Icons.Default.ThumbUp
-        UserRole.TRAINER -> Icons.Default.Star
-        UserRole.JOB_SEEKER -> Icons.Default.Info
-        UserRole.JOB_PROVIDER -> Icons.Default.Email
-    }
+    val (message, bgColor, icon) = when(role) {
+        UserRole.TRAINEE -> null
+        UserRole.TRAINER -> Triple("3 New batches assigned to you.", MaterialTheme.colorScheme.tertiaryContainer, Icons.Default.Star)
+        UserRole.JOB_SEEKER -> Triple("5 Jobs matching your profile found.", Color(0xFFFFF3E0), Icons.Default.Info)
+        UserRole.JOB_PROVIDER -> Triple("Reach 500+ candidates instantly.", Color(0xFFF3E5F5), Icons.Default.Email)
+    } ?: return
     
     Card(
         modifier = Modifier
