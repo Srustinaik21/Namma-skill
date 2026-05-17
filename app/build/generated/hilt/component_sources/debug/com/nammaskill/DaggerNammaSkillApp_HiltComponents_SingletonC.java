@@ -9,13 +9,7 @@ import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.nammaskill.di.AppModule;
-import com.nammaskill.di.AppModule_ProvideAuthRepositoryFactory;
-import com.nammaskill.di.AppModule_ProvideFirebaseAuthFactory;
-import com.nammaskill.di.AppModule_ProvideFirebaseFirestoreFactory;
-import com.nammaskill.domain.repository.AuthRepository;
 import com.nammaskill.ui.auth.LoginViewModel;
 import com.nammaskill.ui.auth.LoginViewModel_HiltModules_KeyModule_ProvideFactory;
 import dagger.hilt.android.ActivityRetainedLifecycle;
@@ -451,7 +445,7 @@ public final class DaggerNammaSkillApp_HiltComponents_SingletonC {
       public T get() {
         switch (id) {
           case 0: // com.nammaskill.ui.auth.LoginViewModel 
-          return (T) new LoginViewModel(singletonCImpl.provideAuthRepositoryProvider.get());
+          return (T) new LoginViewModel();
 
           default: throw new AssertionError(id);
         }
@@ -530,23 +524,9 @@ public final class DaggerNammaSkillApp_HiltComponents_SingletonC {
   private static final class SingletonCImpl extends NammaSkillApp_HiltComponents.SingletonC {
     private final SingletonCImpl singletonCImpl = this;
 
-    private Provider<FirebaseAuth> provideFirebaseAuthProvider;
-
-    private Provider<FirebaseFirestore> provideFirebaseFirestoreProvider;
-
-    private Provider<AuthRepository> provideAuthRepositoryProvider;
-
     private SingletonCImpl() {
 
-      initialize();
 
-    }
-
-    @SuppressWarnings("unchecked")
-    private void initialize() {
-      this.provideFirebaseAuthProvider = DoubleCheck.provider(new SwitchingProvider<FirebaseAuth>(singletonCImpl, 1));
-      this.provideFirebaseFirestoreProvider = DoubleCheck.provider(new SwitchingProvider<FirebaseFirestore>(singletonCImpl, 2));
-      this.provideAuthRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepository>(singletonCImpl, 0));
     }
 
     @Override
@@ -566,34 +546,6 @@ public final class DaggerNammaSkillApp_HiltComponents_SingletonC {
     @Override
     public ServiceComponentBuilder serviceComponentBuilder() {
       return new ServiceCBuilder(singletonCImpl);
-    }
-
-    private static final class SwitchingProvider<T> implements Provider<T> {
-      private final SingletonCImpl singletonCImpl;
-
-      private final int id;
-
-      SwitchingProvider(SingletonCImpl singletonCImpl, int id) {
-        this.singletonCImpl = singletonCImpl;
-        this.id = id;
-      }
-
-      @SuppressWarnings("unchecked")
-      @Override
-      public T get() {
-        switch (id) {
-          case 0: // com.nammaskill.domain.repository.AuthRepository 
-          return (T) AppModule_ProvideAuthRepositoryFactory.provideAuthRepository(singletonCImpl.provideFirebaseAuthProvider.get(), singletonCImpl.provideFirebaseFirestoreProvider.get());
-
-          case 1: // com.google.firebase.auth.FirebaseAuth 
-          return (T) AppModule_ProvideFirebaseAuthFactory.provideFirebaseAuth();
-
-          case 2: // com.google.firebase.firestore.FirebaseFirestore 
-          return (T) AppModule_ProvideFirebaseFirestoreFactory.provideFirebaseFirestore();
-
-          default: throw new AssertionError(id);
-        }
-      }
     }
   }
 }

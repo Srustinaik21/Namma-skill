@@ -1,6 +1,5 @@
 package com.nammaskill.ui.home
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,16 +26,41 @@ import com.nammaskill.util.MockData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: LoginViewModel) {
+fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
     val userProfile by viewModel.userProfile.collectAsState()
+    var showMenu by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Namma Skill", fontWeight = FontWeight.Black) },
+                title = { 
+                    Text("Namma Skill", fontWeight = FontWeight.Black, letterSpacing = 1.sp) 
+                },
                 actions = {
-                    IconButton(onClick = { /* Settings */ }) {
-                        Icon(Icons.Default.Person, contentDescription = "Profile")
+                    Box {
+                        IconButton(onClick = { showMenu = !showMenu }) {
+                            Icon(Icons.Default.AccountCircle, contentDescription = "Profile", modifier = Modifier.size(32.dp))
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Profile") },
+                                onClick = { showMenu = false },
+                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) }
+                            )
+                            Divider()
+                            DropdownMenuItem(
+                                text = { Text("Logout", color = MaterialTheme.colorScheme.error) },
+                                onClick = { 
+                                    showMenu = false
+                                    viewModel.logout()
+                                    onLogout()
+                                },
+                                leadingIcon = { Icon(Icons.Default.ExitToApp, contentDescription = null, tint = MaterialTheme.colorScheme.error) }
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -49,7 +73,8 @@ fun HomeScreen(viewModel: LoginViewModel) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.surface),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
             item {
                 WelcomeBanner(userProfile?.name ?: "Guest", userProfile?.role ?: UserRole.TRAINEE)
@@ -60,7 +85,7 @@ fun HomeScreen(viewModel: LoginViewModel) {
             }
             
             item {
-                SectionHeader("Recommended for You", Icons.Default.Star)
+                SectionHeader("Top Opportunities", Icons.Default.Info)
             }
             
             items(MockData.courses) { course ->
@@ -68,7 +93,7 @@ fun HomeScreen(viewModel: LoginViewModel) {
             }
             
             item {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 RoleSpecificSection(userProfile?.role ?: UserRole.TRAINEE)
             }
         }
@@ -79,29 +104,38 @@ fun HomeScreen(viewModel: LoginViewModel) {
 fun WelcomeBanner(name: String, role: UserRole) {
     val roleLabel = role.name.replace("_", " ").lowercase()
     
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp)
+            .padding(24.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
-        Text(
-            text = "Namaskara, $name!",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Surface(
-            color = MaterialTheme.colorScheme.tertiaryContainer,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.padding(top = 8.dp)
-        ) {
+        Column(modifier = Modifier.padding(24.dp)) {
             Text(
-                text = "Account Type: ${roleLabel.uppercase()}",
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
+                text = "Namaskara,",
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
             )
+            Text(
+                text = name,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Surface(
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = roleLabel.uppercase(),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
         }
     }
 }
@@ -110,13 +144,14 @@ fun WelcomeBanner(name: String, role: UserRole) {
 fun CategorySection() {
     val categories = listOf(
         "Coding" to Icons.Default.Build,
-        "Sewing" to Icons.Default.Edit,
+        "Sewing" to Icons.Default.Face,
         "Agriculture" to Icons.Default.LocationOn,
-        "Electrician" to Icons.Default.Settings,
-        "Plumbing" to Icons.Default.Face
+        "Electric" to Icons.Default.Settings,
+        "Plumbing" to Icons.Default.Build,
+        "Auto" to Icons.Default.Home
     )
     
-    Column(modifier = Modifier.padding(vertical = 16.dp)) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
         SectionHeader("Explore Trades", Icons.Default.List)
         LazyRow(
             contentPadding = PaddingValues(horizontal = 24.dp),
@@ -134,14 +169,24 @@ fun CategoryChip(label: String, icon: ImageVector) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .size(64.dp)
+                .size(72.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
+            Icon(
+                icon, 
+                contentDescription = null, 
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(32.dp)
+            )
         }
-        Text(text = label, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 4.dp))
+        Text(
+            text = label, 
+            style = MaterialTheme.typography.labelMedium, 
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(top = 8.dp)
+        )
     }
 }
 
@@ -150,47 +195,99 @@ fun SectionHeader(title: String, icon: ImageVector) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 12.dp),
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text = title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
     }
 }
 
 @Composable
 fun CourseCard(course: Course) {
+    var applied by remember { mutableStateOf(false) }
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 8.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = course.name.take(1), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (applied) MaterialTheme.colorScheme.secondaryContainer 
+                            else MaterialTheme.colorScheme.tertiaryContainer
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (applied) {
+                        Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    } else {
+                        Text(
+                            text = course.name.take(1), 
+                            fontWeight = FontWeight.Black, 
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                    }
+                }
+                
+                Column(modifier = Modifier.padding(start = 16.dp).weight(1f)) {
+                    Text(
+                        text = course.name, 
+                        fontWeight = FontWeight.Bold, 
+                        style = MaterialTheme.typography.titleMedium,
+                        lineHeight = 20.sp
+                    )
+                    Text(
+                        text = course.centerName, 
+                        style = MaterialTheme.typography.bodySmall, 
+                        color = Color.Gray
+                    )
+                }
             }
             
-            Column(modifier = Modifier.padding(start = 16.dp).weight(1f)) {
-                Text(text = course.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                Text(text = course.centerName, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-            }
+            Spacer(modifier = Modifier.height(16.dp))
             
-            Button(
-                onClick = {}, 
-                shape = RoundedCornerShape(12.dp),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Apply", fontSize = 12.sp)
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(text = course.duration, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                    }
+                    if (course.isFree) {
+                        Text(
+                            text = "FREE", 
+                            color = Color(0xFF4CAF50), 
+                            fontWeight = FontWeight.Black, 
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+                
+                Button(
+                    onClick = { applied = true }, 
+                    enabled = !applied,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (applied) Color.LightGray else MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Text(if (applied) "Applied" else "Apply Now", fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
@@ -199,22 +296,37 @@ fun CourseCard(course: Course) {
 @Composable
 fun RoleSpecificSection(role: UserRole) {
     val message = when(role) {
-        UserRole.TRAINEE -> "Found 12 free courses in your area."
-        UserRole.TRAINER -> "You have 3 training requests pending."
-        UserRole.JOB_SEEKER -> "New Job Openings: 5 in Mandya District."
-        UserRole.JOB_PROVIDER -> "Post a new vacancy to reach 500+ skilled youth."
+        UserRole.TRAINEE -> "Enroll in 12+ free courses today!"
+        UserRole.TRAINER -> "3 New batches assigned to you."
+        UserRole.JOB_SEEKER -> "5 Jobs matching your profile found."
+        UserRole.JOB_PROVIDER -> "Reach 500+ candidates instantly."
+    }
+    
+    val bgColor = when(role) {
+        UserRole.TRAINEE -> MaterialTheme.colorScheme.secondaryContainer
+        UserRole.TRAINER -> MaterialTheme.colorScheme.tertiaryContainer
+        UserRole.JOB_SEEKER -> Color(0xFFFFF3E0)
+        UserRole.JOB_PROVIDER -> Color(0xFFF3E5F5)
+    }
+
+    val icon = when(role) {
+        UserRole.TRAINEE -> Icons.Default.ThumbUp
+        UserRole.TRAINER -> Icons.Default.Star
+        UserRole.JOB_SEEKER -> Icons.Default.Info
+        UserRole.JOB_PROVIDER -> Icons.Default.Email
     }
     
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            .padding(horizontal = 24.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = bgColor)
     ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Info, contentDescription = null)
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(text = message, fontWeight = FontWeight.SemiBold)
+        Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(32.dp))
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(text = message, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
     }
 }
