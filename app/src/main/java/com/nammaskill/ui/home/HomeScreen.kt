@@ -32,6 +32,7 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
     
     // Manage local list for dynamic adding
     val courseList = remember { mutableStateListOf<Course>().apply { addAll(MockData.courses) } }
+    val appliedCourseIds = remember { mutableStateOf(setOf<String>()) }
     
     var showApplyDialog by remember { mutableStateOf<Course?>(null) }
     var showAddJobDialog by remember { mutableStateOf(false) }
@@ -113,6 +114,7 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
                 CourseCard(
                     course = course, 
                     role = userProfile?.role ?: UserRole.TRAINEE,
+                    isApplied = appliedCourseIds.value.contains(course.id),
                     onApplyClick = { showApplyDialog = course }
                 )
             }
@@ -128,7 +130,10 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
             ApplyDialog(
                 courseName = showApplyDialog?.name ?: "",
                 onDismiss = { showApplyDialog = null },
-                onConfirm = { /* Handle successful application */ }
+                onConfirm = { 
+                    appliedCourseIds.value = appliedCourseIds.value + (showApplyDialog?.id ?: "")
+                    showApplyDialog = null
+                }
             )
         }
 
@@ -252,9 +257,9 @@ fun SectionHeader(title: String, icon: ImageVector) {
 fun CourseCard(
     course: Course, 
     role: UserRole,
+    isApplied: Boolean,
     onApplyClick: () -> Unit
 ) {
-    var applied by remember { mutableStateOf(false) }
     val isManagement = role == UserRole.TRAINER || role == UserRole.JOB_PROVIDER
     
     Card(
@@ -272,12 +277,12 @@ fun CourseCard(
                         .size(48.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(
-                            if (applied) MaterialTheme.colorScheme.secondaryContainer 
+                            if (isApplied) MaterialTheme.colorScheme.secondaryContainer 
                             else MaterialTheme.colorScheme.tertiaryContainer
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (applied) {
+                    if (isApplied) {
                         Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     } else {
                         Text(
@@ -329,17 +334,14 @@ fun CourseCard(
                 
                 if (!isManagement) {
                     Button(
-                        onClick = { 
-                            onApplyClick()
-                            applied = true 
-                        }, 
-                        enabled = !applied,
+                        onClick = onApplyClick, 
+                        enabled = !isApplied,
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (applied) Color.LightGray else MaterialTheme.colorScheme.secondary
+                            containerColor = if (isApplied) Color.LightGray else MaterialTheme.colorScheme.secondary
                         )
                     ) {
-                        Text(if (applied) "Applied" else "Apply Now", fontWeight = FontWeight.Bold)
+                        Text(if (isApplied) "Applied" else "Apply Now", fontWeight = FontWeight.Bold)
                     }
                 } else {
                     OutlinedButton(
@@ -358,19 +360,39 @@ fun CourseCard(
 fun ApplyDialog(courseName: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     var phone by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Apply for $courseName") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Please provide basic details to the center.")
-                OutlinedTextField(value = phone, onValueChange = { phone = it }, label = { Text("Phone Number") })
-                OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("Current Village/Town") })
+                Text("Please provide basic details to the training center.")
+                OutlinedTextField(
+                    value = phone, 
+                    onValueChange = { phone = it; error = false }, 
+                    label = { Text("Phone Number") },
+                    isError = error && phone.isEmpty()
+                )
+                OutlinedTextField(
+                    value = location, 
+                    onValueChange = { location = it; error = false }, 
+                    label = { Text("Current Village/Town") },
+                    isError = error && location.isEmpty()
+                )
+                if (error) {
+                    Text("All fields are mandatory", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                }
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(); onDismiss() }) {
+            Button(onClick = { 
+                if (phone.isNotEmpty() && location.isNotEmpty()) {
+                    onConfirm()
+                } else {
+                    error = true
+                }
+            }) {
                 Text("Confirm Application")
             }
         },
@@ -384,31 +406,57 @@ fun ApplyDialog(courseName: String, onDismiss: () -> Unit, onConfirm: () -> Unit
 fun AddListingDialog(onDismiss: () -> Unit, onAdd: (Course) -> Unit) {
     var name by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
+    var district by remember { mutableStateOf("") }
     var isFree by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add New Skill Listing") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Course/Job Name") })
-                OutlinedTextField(value = duration, onValueChange = { duration = it }, label = { Text("Duration (e.g. 3 Months)") })
+                OutlinedTextField(
+                    value = name, 
+                    onValueChange = { name = it; error = false }, 
+                    label = { Text("Course/Job Name") },
+                    isError = error && name.isEmpty()
+                )
+                OutlinedTextField(
+                    value = duration, 
+                    onValueChange = { duration = it; error = false }, 
+                    label = { Text("Duration (e.g. 3 Months)") },
+                    isError = error && duration.isEmpty()
+                )
+                OutlinedTextField(
+                    value = district, 
+                    onValueChange = { district = it; error = false }, 
+                    label = { Text("District") },
+                    isError = error && district.isEmpty()
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isFree, onCheckedChange = { isFree = it })
                     Text("Free Training")
+                }
+                if (error) {
+                    Text("All fields are mandatory", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                 }
             }
         },
         confirmButton = {
             Button(onClick = {
-                onAdd(Course(
-                    id = System.currentTimeMillis().toString(),
-                    name = name,
-                    duration = duration,
-                    isFree = isFree,
-                    centerName = "My Training Center",
-                    availableSeats = 20
-                ))
+                if (name.isNotEmpty() && duration.isNotEmpty() && district.isNotEmpty()) {
+                    onAdd(Course(
+                        id = System.currentTimeMillis().toString(),
+                        name = name,
+                        duration = duration,
+                        district = district,
+                        isFree = isFree,
+                        centerName = "My Training Center",
+                        availableSeats = 20
+                    ))
+                } else {
+                    error = true
+                }
             }) {
                 Text("Create")
             }
