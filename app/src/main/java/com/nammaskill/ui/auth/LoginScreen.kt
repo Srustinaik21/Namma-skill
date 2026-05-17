@@ -1,70 +1,132 @@
 package com.nammaskill.ui.auth
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nammaskill.domain.model.UserRole
+import com.nammaskill.ui.theme.TraineeColor
+import com.nammaskill.ui.theme.TrainerColor
+import com.nammaskill.ui.theme.JobSeekerColor
+import com.nammaskill.ui.theme.JobProviderColor
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    onNavigateToSignUp: () -> Unit
+    viewModel: LoginViewModel,
+    onLoginSuccess: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var selectedRole by remember { mutableStateOf(UserRole.TRAINEE) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Namma Skill",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
+            text = "Welcome to Namma Skill",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.primary
         )
         Text(
-            text = "Rural Skill Development",
+            text = "Empowering Rural Karnataka",
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.secondary
         )
-        Spacer(modifier = Modifier.height(48.dp))
+        
+        Spacer(modifier = Modifier.height(40.dp))
         
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Enter Your Full Name") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
         )
-        Spacer(modifier = Modifier.height(16.dp))
         
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Text(
+            text = "I am a...",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.align(Alignment.Start)
         )
-        Spacer(modifier = Modifier.height(32.dp))
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        RoleGrid(selectedRole) { selectedRole = it }
+        
+        Spacer(modifier = Modifier.height(40.dp))
         
         Button(
-            onClick = onLoginSuccess,
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium
+            onClick = {
+                if (name.isNotEmpty()) {
+                    viewModel.login(name, selectedRole)
+                    onLoginSuccess()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         ) {
-            Text("Sign In", modifier = Modifier.padding(8.dp))
+            Text("Get Started", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
+    }
+}
 
-        TextButton(onClick = onNavigateToSignUp) {
-            Text("Don't have an account? Sign Up")
+@Composable
+fun RoleGrid(selectedRole: UserRole, onRoleSelect: (UserRole) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            RoleCard(UserRole.TRAINEE, "Trainee", TraineeColor, selectedRole == UserRole.TRAINEE, Modifier.weight(1f)) { onRoleSelect(it) }
+            RoleCard(UserRole.TRAINER, "Trainer", TrainerColor, selectedRole == UserRole.TRAINER, Modifier.weight(1f)) { onRoleSelect(it) }
         }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            RoleCard(UserRole.JOB_SEEKER, "Job Seeker", JobSeekerColor, selectedRole == UserRole.JOB_SEEKER, Modifier.weight(1f)) { onRoleSelect(it) }
+            RoleCard(UserRole.JOB_PROVIDER, "Provider", JobProviderColor, selectedRole == UserRole.JOB_PROVIDER, Modifier.weight(1f)) { onRoleSelect(it) }
+        }
+    }
+}
+
+@Composable
+fun RoleCard(
+    role: UserRole, 
+    label: String, 
+    color: Color, 
+    isSelected: Boolean, 
+    modifier: Modifier,
+    onClick: (UserRole) -> Unit
+) {
+    Box(
+        modifier = modifier
+            .height(80.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (isSelected) color else color.copy(alpha = 0.15f))
+            .clickable { onClick(role) }
+            .padding(12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            fontWeight = FontWeight.Bold,
+            color = if (isSelected) Color.White else color
+        )
     }
 }
