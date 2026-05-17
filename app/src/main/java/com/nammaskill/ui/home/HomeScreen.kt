@@ -33,15 +33,23 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
     var currentTab by remember { mutableIntStateOf(0) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     
+    // Search and Filter states for Explore
+    var searchQuery by remember { mutableStateOf("") }
+    var filterFreeOnly by remember { mutableStateOf(false) }
+    
     // Manage local list for dynamic adding
     val fullCourseList = remember { mutableStateListOf<Course>().apply { addAll(MockData.courses) } }
-    val courseList = remember(selectedCategory, fullCourseList.size) {
-        if (selectedCategory == null) fullCourseList 
-        else fullCourseList.filter { it.category.contains(selectedCategory!!, ignoreCase = true) }
-    }
     
+    // Derived lists based on role and filters
     val appliedCourseIds = remember { mutableStateOf(setOf<String>()) }
     
+    val exploreResults = remember(searchQuery, filterFreeOnly, fullCourseList.size) {
+        fullCourseList.filter { 
+            (it.name.contains(searchQuery, ignoreCase = true) || it.centerName.contains(searchQuery, ignoreCase = true)) &&
+            (!filterFreeOnly || it.isFree)
+        }
+    }
+
     var showApplyDialog by remember { mutableStateOf<Course?>(null) }
     var showAddJobDialog by remember { mutableStateOf(false) }
     var showProfileDialog by remember { mutableStateOf(false) }
@@ -108,7 +116,6 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
                     label = { Text("Explore") }
                 )
 
-                // Role based center icon
                 val actionLabel = if (role == UserRole.TRAINER || role == UserRole.JOB_PROVIDER) "Manage" else "Applied"
                 val actionIcon = if (role == UserRole.TRAINER || role == UserRole.JOB_PROVIDER) Icons.Default.List else Icons.Default.CheckCircle
                 
@@ -139,19 +146,25 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
                     userProfile?.role ?: UserRole.TRAINEE,
                     selectedCategory,
                     onCategorySelect = { selectedCategory = if (selectedCategory == it) null else it },
-                    courseList,
+                    fullCourseList.filter { selectedCategory == null || it.category.contains(selectedCategory!!, ignoreCase = true) },
                     appliedCourseIds.value,
                     onApplyRequest = { showApplyDialog = it }
                 )
-                1 -> Column(Modifier.fillMaxSize().padding(24.dp)) {
-                    Text("Search & Filters", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    Text("Advanced search functionality coming soon...", color = Color.Gray)
-                }
-                2 -> Column(Modifier.fillMaxSize().padding(24.dp)) {
-                    val label = if (userProfile?.role == UserRole.TRAINER || userProfile?.role == UserRole.JOB_PROVIDER) "My Active Posts" else "My Applications"
-                    Text(label, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    Text("You have no active items to show right now.", color = Color.Gray)
-                }
+                1 -> ExploreScreen(
+                    searchQuery = searchQuery,
+                    onSearchChange = { searchQuery = it },
+                    filterFreeOnly = filterFreeOnly,
+                    onFilterChange = { filterFreeOnly = it },
+                    results = exploreResults,
+                    appliedIds = appliedCourseIds.value,
+                    role = userProfile?.role ?: UserRole.TRAINEE,
+                    onApplyRequest = { showApplyDialog = it }
+                )
+                2 -> ManagementScreen(
+                    role = userProfile?.role ?: UserRole.TRAINEE,
+                    courses = fullCourseList,
+                    appliedIds = appliedCourseIds.value
+                )
             }
         }
 
@@ -241,6 +254,100 @@ fun MainDashboard(
         item {
             Spacer(modifier = Modifier.height(16.dp))
             RoleSpecificSection(role)
+        }
+    }
+}
+
+@Composable
+fun ExploreScreen(
+    searchQuery: String,
+    onSearchChange: (String) -> Unit,
+    filterFreeOnly: Boolean,
+    onFilterChange: (Boolean) -> Unit,
+    results: List<Course>,
+    appliedIds: Set<String>,
+    role: UserRole,
+    onApplyRequest: (Course) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchChange,
+            placeholder = { Text("Search programs, centers, or skills") },
+            modifier = Modifier.fillMaxWidth(),
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            shape = RoundedCornerShape(12.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            FilterChip(
+                selected = filterFreeOnly,
+                onClick = { onFilterChange(!filterFreeOnly) },
+                label = { Text("Free Courses Only") },
+                leadingIcon = if (filterFreeOnly) {
+                    { Icon(Icons.Default.Check, contentDescription = null, Modifier.size(18.dp)) }
+                } else null
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "Found ${results.size} results",
+            style = MaterialTheme.typography.labelLarge,
+            color = Color.Gray
+        )
+        
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 12.dp)) {
+            items(results) { course ->
+                CourseCard(
+                    course = course,
+                    role = role,
+                    isApplied = appliedIds.contains(course.id),
+                    onApplyClick = { onApplyRequest(course) }
+                )
+            }
+            if (results.isEmpty()) {
+                item {
+                    Text("No results match your search.", modifier = Modifier.padding(top = 40.dp).align(Alignment.CenterHorizontally), color = Color.Gray)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ManagementScreen(role: UserRole, courses: List<Course>, appliedIds: Set<String>) {
+    val isManagement = role == UserRole.TRAINER || role == UserRole.JOB_PROVIDER
+    val itemsToShow = if (isManagement) {
+        courses.take(3) // Mock showing "User's Own" courses
+    } else {
+        courses.filter { appliedIds.contains(it.id) }
+    }
+
+    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+        Text(
+            text = if (isManagement) "Your Postings" else "My Applications",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+        
+        if (itemsToShow.isEmpty()) {
+            Spacer(Modifier.height(40.dp))
+            Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(64.dp).align(Alignment.CenterHorizontally), tint = Color.LightGray)
+            Text(
+                "Nothing to show here yet.", 
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp),
+                color = Color.Gray
+            )
+        } else {
+            LazyColumn(modifier = Modifier.padding(top = 16.dp)) {
+                items(itemsToShow) { course ->
+                    CourseCard(course, role, appliedIds.contains(course.id), {})
+                }
+            }
         }
     }
 }
@@ -608,7 +715,7 @@ fun ProfileDialog(name: String, role: UserRole, onDismiss: () -> Unit) {
 
 @Composable
 fun RoleSpecificSection(role: UserRole) {
-    val (message, bgColor, icon) = when(role) {
+    val message = when(role) {
         UserRole.TRAINEE -> null
         UserRole.TRAINER -> Triple("3 New batches assigned to you.", MaterialTheme.colorScheme.tertiaryContainer, Icons.Default.Star)
         UserRole.JOB_SEEKER -> Triple("5 Jobs matching your profile found.", Color(0xFFFFF3E0), Icons.Default.Info)
@@ -620,12 +727,12 @@ fun RoleSpecificSection(role: UserRole) {
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = bgColor)
+        colors = CardDefaults.cardColors(containerColor = message.second)
     ) {
         Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(32.dp))
+            Icon(message.third, contentDescription = null, modifier = Modifier.size(32.dp))
             Spacer(modifier = Modifier.width(16.dp))
-            Text(text = message, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(text = message.first, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
     }
 }
