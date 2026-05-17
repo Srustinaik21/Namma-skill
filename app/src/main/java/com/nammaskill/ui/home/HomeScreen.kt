@@ -258,6 +258,7 @@ fun MainDashboard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreScreen(
     searchQuery: String,
