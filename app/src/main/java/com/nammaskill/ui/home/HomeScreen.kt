@@ -30,6 +30,12 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
     val userProfile by viewModel.userProfile.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
     
+    // Manage local list for dynamic adding
+    val courseList = remember { mutableStateListOf<Course>().apply { addAll(MockData.courses) } }
+    
+    var showApplyDialog by remember { mutableStateOf<Course?>(null) }
+    var showAddJobDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -67,6 +73,17 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
+        },
+        floatingActionButton = {
+            if (userProfile?.role == UserRole.TRAINER || userProfile?.role == UserRole.JOB_PROVIDER) {
+                ExtendedFloatingActionButton(
+                    onClick = { showAddJobDialog = true },
+                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    text = { Text("Add Listing") },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White
+                )
+            }
         }
     ) { padding ->
         LazyColumn(
@@ -74,7 +91,7 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding)
                 .background(MaterialTheme.colorScheme.surface),
-            contentPadding = PaddingValues(bottom = 24.dp)
+            contentPadding = PaddingValues(bottom = 80.dp)
         ) {
             item {
                 WelcomeBanner(userProfile?.name ?: "Guest", userProfile?.role ?: UserRole.TRAINEE)
@@ -85,17 +102,44 @@ fun HomeScreen(viewModel: LoginViewModel, onLogout: () -> Unit) {
             }
             
             item {
-                SectionHeader("Top Opportunities", Icons.Default.Info)
+                SectionHeader(
+                    if (userProfile?.role == UserRole.TRAINER || userProfile?.role == UserRole.JOB_PROVIDER) 
+                        "Manage Listings" else "Top Opportunities", 
+                    Icons.Default.Info
+                )
             }
             
-            items(MockData.courses) { course ->
-                CourseCard(course)
+            items(courseList) { course ->
+                CourseCard(
+                    course = course, 
+                    role = userProfile?.role ?: UserRole.TRAINEE,
+                    onApplyClick = { showApplyDialog = course }
+                )
             }
             
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 RoleSpecificSection(userProfile?.role ?: UserRole.TRAINEE)
             }
+        }
+
+        // Dialogs
+        if (showApplyDialog != null) {
+            ApplyDialog(
+                courseName = showApplyDialog?.name ?: "",
+                onDismiss = { showApplyDialog = null },
+                onConfirm = { /* Handle successful application */ }
+            )
+        }
+
+        if (showAddJobDialog) {
+            AddListingDialog(
+                onDismiss = { showAddJobDialog = false },
+                onAdd = { newCourse ->
+                    courseList.add(0, newCourse)
+                    showAddJobDialog = false
+                }
+            )
         }
     }
 }
@@ -205,8 +249,13 @@ fun SectionHeader(title: String, icon: ImageVector) {
 }
 
 @Composable
-fun CourseCard(course: Course) {
+fun CourseCard(
+    course: Course, 
+    role: UserRole,
+    onApplyClick: () -> Unit
+) {
     var applied by remember { mutableStateOf(false) }
+    val isManagement = role == UserRole.TRAINER || role == UserRole.JOB_PROVIDER
     
     Card(
         modifier = Modifier
@@ -278,19 +327,93 @@ fun CourseCard(course: Course) {
                     }
                 }
                 
-                Button(
-                    onClick = { applied = true }, 
-                    enabled = !applied,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (applied) Color.LightGray else MaterialTheme.colorScheme.secondary
-                    )
-                ) {
-                    Text(if (applied) "Applied" else "Apply Now", fontWeight = FontWeight.Bold)
+                if (!isManagement) {
+                    Button(
+                        onClick = { 
+                            onApplyClick()
+                            applied = true 
+                        }, 
+                        enabled = !applied,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (applied) Color.LightGray else MaterialTheme.colorScheme.secondary
+                        )
+                    ) {
+                        Text(if (applied) "Applied" else "Apply Now", fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = { /* Edit listing logic */ },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Edit Listing")
+                    }
                 }
             }
         }
     }
+}
+
+@Composable
+fun ApplyDialog(courseName: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    var phone by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Apply for $courseName") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Please provide basic details to the center.")
+                OutlinedTextField(value = phone, onValueChange = { phone = it }, label = { Text("Phone Number") })
+                OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("Current Village/Town") })
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(); onDismiss() }) {
+                Text("Confirm Application")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@Composable
+fun AddListingDialog(onDismiss: () -> Unit, onAdd: (Course) -> Unit) {
+    var name by remember { mutableStateOf("") }
+    var duration by remember { mutableStateOf("") }
+    var isFree by remember { mutableStateOf(true) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add New Skill Listing") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Course/Job Name") })
+                OutlinedTextField(value = duration, onValueChange = { duration = it }, label = { Text("Duration (e.g. 3 Months)") })
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = isFree, onCheckedChange = { isFree = it })
+                    Text("Free Training")
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                onAdd(Course(
+                    id = System.currentTimeMillis().toString(),
+                    name = name,
+                    duration = duration,
+                    isFree = isFree,
+                    centerName = "My Training Center",
+                    availableSeats = 20
+                ))
+            }) {
+                Text("Create")
+            }
+        }
+    )
 }
 
 @Composable
