@@ -1,0 +1,67 @@
+com.nammaskill.app-core-1.12.0-0 C:\Users\gokul\.gradle\caches\transforms-3\01acf9b7c54a9c63a8a8ded39db39254\transformed\core-1.12.0\res
+com.nammaskill.app-activity-1.8.2-1 C:\Users\gokul\.gradle\caches\transforms-3\1026fe414fbaa5919688643ea24a4d49\transformed\activity-1.8.2\res
+com.nammaskill.app-hilt-navigation-1.1.0-2 C:\Users\gokul\.gradle\caches\transforms-3\18113c6c9d6ed517a9d871a568468b52\transformed\hilt-navigation-1.1.0\res
+com.nammaskill.app-room-ktx-2.6.1-3 C:\Users\gokul\.gradle\caches\transforms-3\185afa6e6c0939315265a423ff0be643\transformed\room-ktx-2.6.1\res
+com.nammaskill.app-ui-tooling-preview-release-4 C:\Users\gokul\.gradle\caches\transforms-3\1b4ff1fa61813994c97213fbf4e4fe84\transformed\ui-tooling-preview-release\res
+com.nammaskill.app-material3-1.1.1-5 C:\Users\gokul\.gradle\caches\transforms-3\1ccd288ef745cbfd30b54dcd94f2fbdb\transformed\material3-1.1.1\res
+com.nammaskill.app-fragment-1.5.1-6 C:\Users\gokul\.gradle\caches\transforms-3\1f7f18d2fcce1a0d967a4f6736466cc3\transformed\fragment-1.5.1\res
+com.nammaskill.app-navigation-common-ktx-2.7.7-7 C:\Users\gokul\.gradle\caches\transforms-3\23315c39dca06f8fd331f0f8b9501ca9\transformed\navigation-common-ktx-2.7.7\res
+com.nammaskill.app-ui-unit-release-8 C:\Users\gokul\.gradle\caches\transforms-3\23842977bc12fa9bf255649643f77787\transformed\ui-unit-release\res
+com.nammaskill.app-ui-util-release-9 C:\Users\gokul\.gradle\caches\transforms-3\23db96dc34f1e5163d99810c2ede2bc6\transformed\ui-util-release\res
+com.nammaskill.app-lifecycle-runtime-ktx-2.7.0-10 C:\Users\gokul\.gradle\caches\transforms-3\256a548242ffdb931be79515fd447059\transformed\lifecycle-runtime-ktx-2.7.0\res
+com.nammaskill.app-animation-core-release-11 C:\Users\gokul\.gradle\caches\transforms-3\2f7fda1ff79e3836c52b055b508f2410\transformed\animation-core-release\res
+com.nammaskill.app-emoji2-1.4.0-12 C:\Users\gokul\.gradle\caches\transforms-3\30a017d7a0b7c9e717311d86c53edcfe\transformed\emoji2-1.4.0\res
+com.nammaskill.app-ui-geometry-release-13 C:\Users\gokul\.gradle\caches\transforms-3\38a5a2b0ac61ab9f166c2fd763c2e997\transformed\ui-geometry-release\res
+com.nammaskill.app-core-runtime-2.2.0-14 C:\Users\gokul\.gradle\caches\transforms-3\3a8d5e0a8bf16a61b65e6a51f8ee1e04\transformed\core-runtime-2.2.0\res
+com.nammaskill.app-core-ktx-1.12.0-15 C:\Users\gokul\.gradle\caches\transforms-3\475fde46097674a6bb446dd4eefd4d3b\transformed\core-ktx-1.12.0\res
+com.nammaskill.app-hilt-navigation-compose-1.1.0-16 C:\Users\gokul\.gradle\caches\transforms-3\4df3162eb865f4270660669f0011c7a5\transformed\hilt-navigation-compose-1.1.0\res
+com.nammaskill.app-startup-runtime-1.1.1-17 C:\Users\gokul\.gradle\caches\transforms-3\50ed27b467749bad1441e29deba6151d\transformed\startup-runtime-1.1.1\res
+com.nammaskill.app-lifecycle-runtime-2.7.0-18 C:\Users\gokul\.gradle\caches\transforms-3\54d1c974ffa37d7ad4eea28d8113db61\transformed\lifecycle-runtime-2.7.0\res
+com.nammaskill.app-play-services-base-18.0.1-19 C:\Users\gokul\.gradle\caches\transforms-3\56052f20f7caaaf7e11cd925d7c566e7\transformed\play-services-base-18.0.1\res
+com.nammaskill.app-profileinstaller-1.3.0-20 C:\Users\gokul\.gradle\caches\transforms-3\5807d4438c5ca68da27d84d5b3d7f154\transformed\profileinstaller-1.3.0\res
+com.nammaskill.app-play-services-basement-18.1.0-21 C:\Users\gokul\.gradle\caches\transforms-3\58978fbd008e4a940852793b0ff27ce1\transformed\play-services-basement-18.1.0\res
+com.nammaskill.app-browser-1.4.0-22 C:\Users\gokul\.gradle\caches\transforms-3\58dd640174ac4301647d120e5bf7ba93\transformed\browser-1.4.0\res
+com.nammaskill.app-firebase-messaging-23.4.1-23 C:\Users\gokul\.gradle\caches\transforms-3\5be72440f226e39fc3180fd17204b404\transformed\firebase-messaging-23.4.1\res
+com.nammaskill.app-runtime-saveable-release-24 C:\Users\gokul\.gradle\caches\transforms-3\60eb2e1de4689bdef3fd078a581b5bc4\transformed\runtime-saveable-release\res
+com.nammaskill.app-material-release-25 C:\Users\gokul\.gradle\caches\transforms-3\60f62c5e13199f1750e1f09c4fc251f1\transformed\material-release\res
+com.nammaskill.app-savedstate-ktx-1.2.1-26 C:\Users\gokul\.gradle\caches\transforms-3\6d93b0a4ca177fb661679aafac2bc90f\transformed\savedstate-ktx-1.2.1\res
+com.nammaskill.app-firebase-common-20.4.2-27 C:\Users\gokul\.gradle\caches\transforms-3\7490df63db2928f18c65439a4cfa4b19\transformed\firebase-common-20.4.2\res
+com.nammaskill.app-material-ripple-release-28 C:\Users\gokul\.gradle\caches\transforms-3\78b80d2570ae70fa6cff609846f327e6\transformed\material-ripple-release\res
+com.nammaskill.app-room-runtime-2.6.1-29 C:\Users\gokul\.gradle\caches\transforms-3\8008bc76d04e4c4e04ad77f726181a75\transformed\room-runtime-2.6.1\res
+com.nammaskill.app-annotation-experimental-1.3.0-30 C:\Users\gokul\.gradle\caches\transforms-3\827519cd408231ffab01096e3709ec46\transformed\annotation-experimental-1.3.0\res
+com.nammaskill.app-sqlite-framework-2.4.0-31 C:\Users\gokul\.gradle\caches\transforms-3\8d88627811be551b37ccd95d3e29d2db\transformed\sqlite-framework-2.4.0\res
+com.nammaskill.app-ui-text-release-32 C:\Users\gokul\.gradle\caches\transforms-3\95f1c868978d880bc39e33e9b34f2ea4\transformed\ui-text-release\res
+com.nammaskill.app-animation-release-33 C:\Users\gokul\.gradle\caches\transforms-3\986e859298376213d0478fd18ad51c6c\transformed\animation-release\res
+com.nammaskill.app-navigation-compose-2.7.7-34 C:\Users\gokul\.gradle\caches\transforms-3\9a782816dc671914d4eb415ecc2daa37\transformed\navigation-compose-2.7.7\res
+com.nammaskill.app-savedstate-1.2.1-35 C:\Users\gokul\.gradle\caches\transforms-3\9bbf59724f64087fd3f8852be791c03c\transformed\savedstate-1.2.1\res
+com.nammaskill.app-ui-graphics-release-36 C:\Users\gokul\.gradle\caches\transforms-3\9cdef8f54b0d329fe9cec99b7fcceb4e\transformed\ui-graphics-release\res
+com.nammaskill.app-lifecycle-livedata-core-ktx-2.7.0-37 C:\Users\gokul\.gradle\caches\transforms-3\a01270a938689e94a05f152c91330fda\transformed\lifecycle-livedata-core-ktx-2.7.0\res
+com.nammaskill.app-foundation-release-38 C:\Users\gokul\.gradle\caches\transforms-3\aac6a357a89fe45bc50a7cac0484534c\transformed\foundation-release\res
+com.nammaskill.app-lifecycle-livedata-2.7.0-39 C:\Users\gokul\.gradle\caches\transforms-3\b2af540d2042ad082f6cd9e05a6c00df\transformed\lifecycle-livedata-2.7.0\res
+com.nammaskill.app-lifecycle-viewmodel-savedstate-2.7.0-40 C:\Users\gokul\.gradle\caches\transforms-3\b4e2c0566d143dadf1021ceb77d00376\transformed\lifecycle-viewmodel-savedstate-2.7.0\res
+com.nammaskill.app-runtime-release-41 C:\Users\gokul\.gradle\caches\transforms-3\b6239d0d73cff12198e8a690265f8352\transformed\runtime-release\res
+com.nammaskill.app-ui-tooling-data-release-42 C:\Users\gokul\.gradle\caches\transforms-3\bf7c6fcf954f77cb9a5b3b6ebc7d29ff\transformed\ui-tooling-data-release\res
+com.nammaskill.app-lifecycle-viewmodel-compose-2.7.0-43 C:\Users\gokul\.gradle\caches\transforms-3\c2fb8a90ac32943c68c1365f78d69247\transformed\lifecycle-viewmodel-compose-2.7.0\res
+com.nammaskill.app-navigation-runtime-2.7.7-44 C:\Users\gokul\.gradle\caches\transforms-3\c410c57508b60fcdbd4999376767b8e2\transformed\navigation-runtime-2.7.7\res
+com.nammaskill.app-sqlite-2.4.0-45 C:\Users\gokul\.gradle\caches\transforms-3\c6b94c681d873ea86b49528ea9e12696\transformed\sqlite-2.4.0\res
+com.nammaskill.app-navigation-runtime-ktx-2.7.7-46 C:\Users\gokul\.gradle\caches\transforms-3\cbc45a15205a04e5eee22d8e41017481\transformed\navigation-runtime-ktx-2.7.7\res
+com.nammaskill.app-activity-ktx-1.8.2-47 C:\Users\gokul\.gradle\caches\transforms-3\cbd25066b58cbc524cf6c7c72cfa7205\transformed\activity-ktx-1.8.2\res
+com.nammaskill.app-navigation-common-2.7.7-48 C:\Users\gokul\.gradle\caches\transforms-3\cbe8c3f8bd1898e614056091f521cf73\transformed\navigation-common-2.7.7\res
+com.nammaskill.app-customview-poolingcontainer-1.0.0-49 C:\Users\gokul\.gradle\caches\transforms-3\cdb178193624a6b6069d99dcb05ea762\transformed\customview-poolingcontainer-1.0.0\res
+com.nammaskill.app-material-icons-core-release-50 C:\Users\gokul\.gradle\caches\transforms-3\d64ebf0994dfb31c3689049942dbb9e3\transformed\material-icons-core-release\res
+com.nammaskill.app-ui-tooling-release-51 C:\Users\gokul\.gradle\caches\transforms-3\de597128100bc45a15a7cfccc2ace581\transformed\ui-tooling-release\res
+com.nammaskill.app-ui-release-52 C:\Users\gokul\.gradle\caches\transforms-3\e0a4e618fb4a01ac3d2a90c1f23e514f\transformed\ui-release\res
+com.nammaskill.app-activity-compose-1.8.2-53 C:\Users\gokul\.gradle\caches\transforms-3\e476d4b92882f96616063861e4f9f444\transformed\activity-compose-1.8.2\res
+com.nammaskill.app-lifecycle-livedata-core-2.7.0-54 C:\Users\gokul\.gradle\caches\transforms-3\ee33ab51fd970ce8cd8ac0d1582c5537\transformed\lifecycle-livedata-core-2.7.0\res
+com.nammaskill.app-lifecycle-viewmodel-ktx-2.7.0-55 C:\Users\gokul\.gradle\caches\transforms-3\f19938bd136c7397cc70ae579b5ccacd\transformed\lifecycle-viewmodel-ktx-2.7.0\res
+com.nammaskill.app-lifecycle-process-2.7.0-56 C:\Users\gokul\.gradle\caches\transforms-3\f31c642df7218b8a04fce7a4affea2df\transformed\lifecycle-process-2.7.0\res
+com.nammaskill.app-ui-test-manifest-1.5.1-57 C:\Users\gokul\.gradle\caches\transforms-3\f7745b4c928c6855c646d2000dc0c15c\transformed\ui-test-manifest-1.5.1\res
+com.nammaskill.app-foundation-layout-release-58 C:\Users\gokul\.gradle\caches\transforms-3\f8c80eac76f36172b6105a9d15cdbee3\transformed\foundation-layout-release\res
+com.nammaskill.app-lifecycle-viewmodel-2.7.0-59 C:\Users\gokul\.gradle\caches\transforms-3\f970078bb977973c0c7a2c5cd7da229c\transformed\lifecycle-viewmodel-2.7.0\res
+com.nammaskill.app-res-60 C:\Users\gokul\Downloads\namma skill\app\build\generated\res\processDebugGoogleServices
+com.nammaskill.app-resValues-61 C:\Users\gokul\Downloads\namma skill\app\build\generated\res\resValues\debug
+com.nammaskill.app-packageDebugResources-62 C:\Users\gokul\Downloads\namma skill\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.nammaskill.app-packageDebugResources-63 C:\Users\gokul\Downloads\namma skill\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.nammaskill.app-merged_res-64 C:\Users\gokul\Downloads\namma skill\app\build\intermediates\merged_res\debug
+com.nammaskill.app-debug-65 C:\Users\gokul\Downloads\namma skill\app\src\debug\res
+com.nammaskill.app-main-66 C:\Users\gokul\Downloads\namma skill\app\src\main\res
